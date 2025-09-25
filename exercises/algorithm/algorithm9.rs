@@ -2,7 +2,7 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
+
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -37,7 +37,36 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        // 将新元素添加到数组末尾
+        self.items.push(value);
+        self.count += 1;
+        
+        // 向上调整，维护堆的性质
+        self.heapify_up(self.count);
+    }
+    
+    fn heapify_up(&mut self, mut idx: usize) {
+        while idx > 1 {
+            let parent = self.parent_idx(idx);
+            if (self.comparator)(&self.items[idx], &self.items[parent]) {
+                self.items.swap(idx, parent);
+                idx = parent;
+            } else {
+                break;
+            }
+        }
+    }
+    
+    fn heapify_down(&mut self, mut idx: usize) {
+        while self.children_present(idx) {
+            let smallest_child = self.smallest_child_idx(idx);
+            if (self.comparator)(&self.items[smallest_child], &self.items[idx]) {
+                self.items.swap(idx, smallest_child);
+                idx = smallest_child;
+            } else {
+                break;
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +86,20 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+        
+        // 如果只有左子节点
+        if right > self.count {
+            return left;
+        }
+        
+        // 如果有两个子节点，返回更符合堆性质的那个
+        if (self.comparator)(&self.items[left], &self.items[right]) {
+            left
+        } else {
+            right
+        }
     }
 }
 
@@ -84,8 +125,29 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.is_empty() {
+            return None;
+        }
+        
+        // 取出根节点（堆顶元素）
+        let root = std::mem::replace(&mut self.items[1], T::default());
+        
+        if self.count == 1 {
+            // 如果只有一个元素，直接移除
+            self.items.pop();
+            self.count = 0;
+            return Some(root);
+        }
+        
+        // 将最后一个元素移到根部
+        let last = self.items.pop().unwrap();
+        self.items[1] = last;
+        self.count -= 1;
+        
+        // 向下调整，维护堆的性质
+        self.heapify_down(1);
+        
+        Some(root)
     }
 }
 
